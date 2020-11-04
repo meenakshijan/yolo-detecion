@@ -49,7 +49,7 @@ def detectViolation(det,cos):
         return False
 
 def detect(save_img=False):
-    opt.source = 'video7.avi'
+    opt.source = 'yolo-detecion/3.mp4'
     out, source, weights, view_img, save_txt, imgsz = \
         opt.save_dir, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     webcam = source.isnumeric() or source.startswith(('rtsp://', 'rtmp://', 'http://')) or source.endswith('.txt')
@@ -74,7 +74,7 @@ def detect(save_img=False):
         modelc.load_state_dict(torch.load('weights/resnet101.pt', map_location=device)['model'])  # load weights
         modelc.to(device).eval()
 
-    coordinates = [(130,330),(1920,330),(0,0,255)]
+    coordinates = [(375,250),(990,250),(0,0,255)]
 
     # Set Dataloader
     vid_path, vid_writer = None, None
