@@ -24,18 +24,26 @@ from utils.torch_utils import select_device, load_classifier, time_synchronized
 # (130,330)
 # (1920,330)
 
-# (375,250)                                             (990,250)
-# ---------------------------------------------------------------
-            # (450,150)        
+ # (450,50)        
 #             -----------------
-#             |               |
+#             |               |     (violation)
 #             |               |
 #             |               |
 #             ----------------- (650,150)
 
-# car X1 > line X1
-# car Y1 < line Y1
-# car X2 < line X2
+# (375,250)                                             (990,250)
+# ---------------------------------------------------------------
+            # (450,350)        
+#             -----------------
+#             |               |     (Non violation)
+#             |               |
+#             |               |
+#             ----------------- (650,450)
+
+# Logic
+# car X1 > line X1 and
+# car Y1 < line Y1 and
+# car X2 < line X2 and
 # car Y2 < line Y2
 
 def detectViolation(det,cos):
@@ -74,6 +82,7 @@ def detect(save_img=False):
         modelc.load_state_dict(torch.load('weights/resnet101.pt', map_location=device)['model'])  # load weights
         modelc.to(device).eval()
 
+    # Line co ordinates
     coordinates = [(375,250),(990,250),(0,0,255)]
 
     # Set Dataloader
@@ -105,6 +114,8 @@ def detect(save_img=False):
         # Inference
         t1 = time_synchronized()
         pred = model(img, augment=opt.augment)[0]
+        
+        # pred = [tensor([1.00e+,1.50e+,1.00e+,1.50e+,0.85,2.00e+]),[100,150,100,150,0.85,2]....]        
 
         # Apply NMS
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
@@ -127,7 +138,7 @@ def detect(save_img=False):
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
-                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round() #  [tensor([1.00e+,1.50e+,1.00e+,1.50e+,0.85,2.00e+])...] -> [[100,150,100,150,0.85,2]....]
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
